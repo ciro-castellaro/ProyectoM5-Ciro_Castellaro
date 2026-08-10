@@ -1,0 +1,35 @@
+{
+  "name": "github-mcp-agent",
+  "version": "1.0.0",
+  "description": "MCP Server en Node.js + TypeScript que expone tools de automatizacion de GitHub, consumible por un agente de IA desde Antigravity.",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ciro-castellaro/ProyectoM5-Ciro_Castellaro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ciro-castellaro/ProyectoM5-Ciro_Castellaro/issues"
+  },
+  "homepage": "https://github.com/ciro-castellaro/ProyectoM5-Ciro_Castellaro#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@octokit/rest": "^22.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
