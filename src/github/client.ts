@@ -11,5 +11,6 @@ export function createOctokit(): Octokit {
   return new Octokit({
     auth: token,
     userAgent: "github-mcp-agent/1.0.0",
+    headers: { "x-github-api-version": "2026-03-10" },
   });
 }
