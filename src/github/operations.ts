@@ -3,6 +3,13 @@ import { withExponentialBackoff } from "../utils/retry.js";
 import { logger } from "../utils/logging.js";
 import { toAppError } from "../errors/index.js";
 import { toRepoDTO, toIssueDTO, toCommitDTO, type RepoDTO, type IssueDTO, type CommitDTO } from "./dto.js";
+import type {
+  CreateRepositoryInput,
+  CreateIssueInput,
+  ListRepositoriesInput,
+  CreateCommitInput,
+  ListIssuesInput,
+} from "../schemas/index.js";
 
 function logRateLimit(headers: Record<string, string | number | undefined> | undefined): void {
   if (!headers) return;
@@ -13,46 +20,11 @@ function logRateLimit(headers: Record<string, string | number | undefined> | und
   });
 }
 
-export interface CreateRepositoryParams {
-  name: string;
-  description?: string;
-  private: boolean;
-}
-
-export interface CreateIssueParams {
-  owner: string;
-  repo: string;
-  title: string;
-  body?: string;
-  labels?: string[];
-  assignees?: string[];
-}
-
-export interface ListRepositoriesParams {
-  page: number;
-  perPage: number;
-  sort: "created" | "updated" | "pushed" | "full_name";
-  direction: "asc" | "desc";
-  type: "all" | "owner" | "member";
-}
-
-export interface CreateCommitParams {
-  owner: string;
-  repo: string;
-  branch: string;
-  path: string;
-  content: string;
-  message: string;
-}
-
-export interface ListIssuesParams {
-  owner: string;
-  repo: string;
-  state: "open" | "closed" | "all";
-  labels?: string[];
-  page: number;
-  perPage: number;
-}
+export type CreateRepositoryParams = CreateRepositoryInput;
+export type CreateIssueParams = CreateIssueInput;
+export type ListRepositoriesParams = ListRepositoriesInput;
+export type CreateCommitParams = CreateCommitInput;
+export type ListIssuesParams = ListIssuesInput;
 
 export class GitHubClient {
   constructor(private readonly octokit: Octokit) {}
