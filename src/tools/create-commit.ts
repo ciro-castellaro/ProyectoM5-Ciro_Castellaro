@@ -10,7 +10,7 @@ export function registerCreateCommitTool(server: McpServer, github: GitHubClient
     {
       title: "Crear commit",
       description:
-        "Agrega o modifica un archivo en un repositorio de GitHub mediante un commit directo sobre una rama existente. Requiere owner, repo, branch, path del archivo, contenido completo del archivo y mensaje de commit. No crea la rama si no existe: la rama debe existir previamente.",
+        "Agrega o modifica un archivo en un repositorio de GitHub mediante un commit directo sobre una rama existente. Usar cuando el usuario pida subir/actualizar el contenido de un archivo puntual. Requiere owner, repo, branch, path del archivo, contenido completo del archivo y mensaje de commit. No crea la rama si no existe: la rama debe existir previamente (los repos creados con create_repository ya tienen la rama main lista). No usar para crear un repositorio nuevo (usar create_repository).",
       inputSchema: createCommitSchema.shape,
     },
     async (rawArgs) => {

@@ -10,7 +10,7 @@ export function registerListIssuesTool(server: McpServer, github: GitHubClient):
     {
       title: "Listar issues",
       description:
-        "Lista los issues de un repositorio especifico de GitHub, filtrando por estado y labels. Usar cuando el usuario pida ver los issues abiertos/cerrados de un repositorio puntual. Requiere owner y repo exactos.",
+        "Lista los issues de un repositorio especifico de GitHub, filtrando por estado y labels. Usar cuando el usuario pida ver los issues abiertos/cerrados de un repositorio puntual. Requiere owner y repo exactos. Solo devuelve issues: los pull requests se excluyen automaticamente.",
       inputSchema: listIssuesSchema.shape,
     },
     async (rawArgs) => {

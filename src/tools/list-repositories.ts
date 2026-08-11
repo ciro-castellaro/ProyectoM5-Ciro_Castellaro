@@ -10,7 +10,7 @@ export function registerListRepositoriesTool(server: McpServer, github: GitHubCl
     {
       title: "Listar repositorios",
       description:
-        "Lista los repositorios del usuario autenticado, con paginacion y orden configurables. Usar cuando el usuario pida ver que repositorios tiene, buscar uno por nombre, o confirmar si un repositorio ya existe antes de crearlo.",
+        "Lista los repositorios del usuario autenticado, con paginacion y orden configurables. Usar cuando el usuario pida ver que repositorios tiene, buscar uno por nombre, o confirmar si un repositorio ya existe antes de crearlo. No usar para ver los issues de un repositorio puntual (usar list_issues).",
       inputSchema: listRepositoriesSchema.shape,
     },
     async (rawArgs) => {
