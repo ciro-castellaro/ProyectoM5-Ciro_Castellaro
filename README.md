@@ -121,9 +121,15 @@ El servidor carga `.env` automáticamente con la carga nativa de Node (`process.
 
 ## Configurar el servidor en Antigravity
 
-En Antigravity: **MCP Servers → Manage → View raw config** para ver el archivo de configuración real de tu instalación (el nombre y la ubicación exacta pueden variar según versión/sistema operativo — no asumirlo, abrirlo y confirmarlo ahí).
+En Antigravity: click en `...` en el panel del agente → **MCP Servers → Manage MCP Servers → View raw config** para abrir el archivo de configuración real de tu instalación (el nombre y la ubicación exacta pueden variar según versión/sistema operativo — no asumirlo, abrirlo y confirmarlo ahí). En Windows suele estar en `%userprofile%\.gemini\config\mcp_config.json`.
 
-Estructura típica de una entrada de servidor MCP (adaptar al formato real que muestre tu "raw config"):
+Antes de editar el archivo, definí `GITHUB_TOKEN` como **variable de entorno del sistema** (no alcanza con tenerlo solo en el `.env` del proyecto, porque `${GITHUB_TOKEN}` se resuelve contra el entorno del sistema operativo). En Windows, con PowerShell:
+
+```powershell
+[System.Environment]::SetEnvironmentVariable("GITHUB_TOKEN", "tu_token_aca", "User")
+```
+
+Después, agregá la entrada del servidor al archivo `mcp_config.json`:
 
 ```json
 {
@@ -142,8 +148,9 @@ Estructura típica de una entrada de servidor MCP (adaptar al formato real que m
 Puntos clave:
 
 - **Usar la build compilada** (`node dist/server.js`), no `npx tsx src/server.ts` — eso queda solo para desarrollo activo.
-- **El token nunca va en texto plano** en este archivo: `"${GITHUB_TOKEN}"` interpola la variable desde el entorno del sistema, donde debe estar definida de antemano (fuera de este archivo de configuración).
-- Después de guardar la configuración, reiniciar/recargar Antigravity para que reconozca el servidor nuevo.
+- **El token nunca va en texto plano** en este archivo: `"${GITHUB_TOKEN}"` interpola la variable desde el entorno del sistema. Este comportamiento fue **verificado empíricamente** durante el desarrollo del proyecto (no solo asumido de la documentación): se confirmó con un log de diagnóstico temporal que el token efectivamente llega al proceso antes de que el servidor cargue su `.env` local.
+- Reiniciar Antigravity **por completo** (cerrar y volver a abrir) después de definir la variable de entorno y de guardar la configuración, para que ambos cambios se reflejen.
+- Si por algún motivo la interpolación no estuviera disponible en tu versión de Antigravity, el servidor tiene un respaldo: carga su propio `.env` local automáticamente (con `process.loadEnvFile()`, resuelto por ruta absoluta), así que también funciona sin este bloque `env`.
 
 ---
 
