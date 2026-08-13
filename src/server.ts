@@ -6,7 +6,7 @@ import { registerGitHubTools } from "./tools/index.js";
 import { logger } from "./utils/logging.js";
 
 try {
-  process.loadEnvFile();
+  process.loadEnvFile(new URL("../.env", import.meta.url));
 } catch {
   // .env es opcional: si no existe, se espera que GITHUB_TOKEN venga ya definido
   // en el entorno del sistema (por ejemplo, interpolado desde la configuracion de Antigravity).
