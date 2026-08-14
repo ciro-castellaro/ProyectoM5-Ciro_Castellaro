@@ -55,6 +55,12 @@ describe("toAppError", () => {
     expect(result.retryable).toBe(true);
   });
 
+  it("classifies a 429 (secondary rate limit) as retryable", () => {
+    const result = toAppError({ status: 429, response: { headers: { "retry-after": "30" } } });
+    expect(result.retryable).toBe(true);
+    expect(result.message).toContain("limite de solicitudes");
+  });
+
   it("classifies a plain Error as a retryable NetworkError", () => {
     const result = toAppError(new Error("socket hang up"));
     expect(result).toBeInstanceOf(NetworkError);

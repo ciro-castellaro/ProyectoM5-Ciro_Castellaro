@@ -155,6 +155,17 @@ export function toAppError(error: unknown): AppError {
       });
     }
 
+    if (status === 429) {
+      return new GitHubAPIError({
+        message: "Se alcanzo el limite de solicitudes de la API de GitHub. Intenta de nuevo en unos minutos.",
+        status,
+        retryable: true,
+        hint: "Revisa el header retry-after para saber cuanto esperar",
+        action: "Esperar antes de reintentar",
+        details: { retryAfter: error.response?.headers?.["retry-after"] },
+      });
+    }
+
     return new GitHubAPIError({
       message: `Error al comunicarse con GitHub: ${upstreamMessage}`,
       status,
