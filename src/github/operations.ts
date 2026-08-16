@@ -155,11 +155,14 @@ export class GitHubClient {
           parents: [baseCommitSha],
         });
 
+        // force: false (default de la API, explicitado): solo fast-forward,
+        // nunca reescribir historia ni pisar commits concurrentes.
         await this.octokit.git.updateRef({
           owner,
           repo,
           ref: `heads/${branch}`,
           sha: commitResponse.data.sha,
+          force: false,
         });
 
         return toCommitDTO(commitResponse.data);
