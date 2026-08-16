@@ -215,4 +215,28 @@ describe("GitHubClient error handling", () => {
     expect(repo.fullName).toBe("ciro-castellaro/demo-api");
     expect(octokit.repos.get).toHaveBeenCalledTimes(2);
   });
+
+  it("caps a malicious retry-after header instead of sleeping indefinitely", async () => {
+    vi.useFakeTimers();
+    const octokit = createMockOctokit();
+    octokit.repos.get
+      .mockRejectedValueOnce({
+        status: 500,
+        message: "Internal Server Error",
+        response: { headers: { "retry-after": "9999999" } },
+      })
+      .mockResolvedValueOnce({
+        headers: {},
+        data: { name: "demo-api", full_name: "ciro-castellaro/demo-api", html_url: "https://github.com/x", private: false },
+      });
+    const github = new GitHubClient(octokit as unknown as Octokit);
+
+    const resultPromise = github.getRepository("ciro-castellaro", "demo-api");
+    // Sin el tope, el retry esperaria ~9999999s; con el tope alcanza avanzar 60s.
+    await vi.advanceTimersByTimeAsync(60_000);
+    const repo = await resultPromise;
+
+    expect(repo.fullName).toBe("ciro-castellaro/demo-api");
+    expect(octokit.repos.get).toHaveBeenCalledTimes(2);
+  });
 });

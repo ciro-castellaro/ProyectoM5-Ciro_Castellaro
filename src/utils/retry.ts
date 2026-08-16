@@ -13,6 +13,10 @@ interface HeadersLike {
   };
 }
 
+// Tope al delay sugerido por headers: un Retry-After corrupto o malicioso no
+// debe poder dormir el proceso indefinidamente.
+const MAX_HEADER_DELAY_MS = 60_000;
+
 function getRetryAfterMs(error: unknown): number | undefined {
   if (typeof error !== "object" || error === null) return undefined;
   const headers = (error as HeadersLike).response?.headers;
@@ -21,14 +25,16 @@ function getRetryAfterMs(error: unknown): number | undefined {
   const retryAfter = headers["retry-after"];
   if (retryAfter !== undefined) {
     const seconds = Number(retryAfter);
-    if (!Number.isNaN(seconds)) return seconds * 1000;
+    if (!Number.isNaN(seconds) && seconds >= 0) {
+      return Math.min(seconds * 1000, MAX_HEADER_DELAY_MS);
+    }
   }
 
   const reset = headers["x-ratelimit-reset"];
   if (reset !== undefined) {
     const resetMs = Number(reset) * 1000;
     const delta = resetMs - Date.now();
-    if (delta > 0) return delta;
+    if (delta > 0) return Math.min(delta, MAX_HEADER_DELAY_MS);
   }
 
   return undefined;
