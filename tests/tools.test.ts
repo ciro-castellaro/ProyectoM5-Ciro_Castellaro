@@ -99,6 +99,71 @@ describe("createCommitSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("rejects path traversal segments in the file path", () => {
+    const base = {
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      branch: "main",
+      content: "data",
+      message: "msg",
+    };
+    expect(createCommitSchema.safeParse({ ...base, path: "../secrets.txt" }).success).toBe(false);
+    expect(createCommitSchema.safeParse({ ...base, path: "docs/../../x" }).success).toBe(false);
+    expect(createCommitSchema.safeParse({ ...base, path: "/etc/passwd" }).success).toBe(false);
+    expect(createCommitSchema.safeParse({ ...base, path: "docs/guia.md" }).success).toBe(true);
+  });
+
+  it("rejects file content larger than the allowed maximum", () => {
+    const result = createCommitSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      branch: "main",
+      path: "big.txt",
+      content: "a".repeat(1_000_001),
+      message: "msg",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a branch containing '..'", () => {
+    const result = createCommitSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      branch: "main..evil",
+      path: "a.txt",
+      content: "data",
+      message: "msg",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("input hardening across schemas", () => {
+  it("rejects an owner with invalid format", () => {
+    expect(
+      createIssueSchema.safeParse({ owner: "-empieza-con-guion", repo: "demo", title: "t" }).success,
+    ).toBe(false);
+    expect(
+      createIssueSchema.safeParse({ owner: "a".repeat(40), repo: "demo", title: "t" }).success,
+    ).toBe(false);
+  });
+
+  it("rejects more than 10 assignees on an issue", () => {
+    const assignees = Array.from({ length: 11 }, (_, i) => `user${i}`);
+    const result = createIssueSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "demo",
+      title: "t",
+      assignees,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a page number beyond the allowed maximum", () => {
+    const result = listRepositoriesSchema.safeParse({ page: 10_001 });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("listIssuesSchema", () => {
