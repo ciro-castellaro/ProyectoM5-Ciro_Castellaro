@@ -289,7 +289,7 @@ npx @modelcontextprotocol/inspector --cli node dist/server.js --method tools/cal
 npm run test
 ```
 
-31 tests con Vitest, deterministas, **sin ninguna llamada real a la API de GitHub** (el cliente de Octokit se mockea inyectándolo en el constructor de `GitHubClient`):
+39 tests con Vitest, deterministas, **sin ninguna llamada real a la API de GitHub** (el cliente de Octokit se mockea inyectándolo en el constructor de `GitHubClient`):
 
 - `tests/tools.test.ts` — validación de los 5 schemas de Zod (inputs válidos e inválidos).
 - `tests/github.test.ts` — las 5 operaciones de `GitHubClient` con Octokit mockeado, incluyendo casos de error (repositorio inexistente, credenciales inválidas) y el comportamiento de reintento ante errores recuperables.
