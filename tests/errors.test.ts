@@ -50,6 +50,16 @@ describe("toAppError", () => {
     expect(result.message).toContain("name already exists on this account");
   });
 
+  it("sanitizes control characters and truncates oversized upstream messages", () => {
+    const ansiEscape = String.fromCharCode(27);
+    const malicious = "linea1\nlinea2" + ansiEscape + "[31mrojo" + "x".repeat(500);
+    const result = toAppError({ status: 422, response: { data: { message: malicious } } });
+    expect(result.message).not.toContain("\n");
+    expect(result.message).not.toContain(ansiEscape);
+    expect(result.message.length).toBeLessThan(400);
+    expect(result.message).toContain("…");
+  });
+
   it("classifies a 5xx as retryable", () => {
     const result = toAppError({ status: 503, message: "Service Unavailable" });
     expect(result.retryable).toBe(true);
