@@ -123,23 +123,14 @@ El servidor carga `.env` automáticamente con la carga nativa de Node (`process.
 
 En Antigravity: click en `...` en el panel del agente → **MCP Servers → Manage MCP Servers → View raw config** para abrir el archivo de configuración real de tu instalación (el nombre y la ubicación exacta pueden variar según versión/sistema operativo — no asumirlo, abrirlo y confirmarlo ahí). En Windows suele estar en `%userprofile%\.gemini\config\mcp_config.json`.
 
-Antes de editar el archivo, definí `GITHUB_TOKEN` como **variable de entorno del sistema** (no alcanza con tenerlo solo en el `.env` del proyecto, porque `${GITHUB_TOKEN}` se resuelve contra el entorno del sistema operativo). En Windows, con PowerShell:
-
-```powershell
-[System.Environment]::SetEnvironmentVariable("GITHUB_TOKEN", "tu_token_aca", "User")
-```
-
-Después, agregá la entrada del servidor al archivo `mcp_config.json`:
+Agregá la entrada del servidor:
 
 ```json
 {
   "mcpServers": {
     "github-mcp-agent": {
       "command": "node",
-      "args": ["/ruta/absoluta/a/ProyectoM5-Ciro_Castellaro/dist/server.js"],
-      "env": {
-        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
-      }
+      "args": ["/ruta/absoluta/a/donde/clonaste/el/proyecto/dist/server.js"]
     }
   }
 }
@@ -147,10 +138,11 @@ Después, agregá la entrada del servidor al archivo `mcp_config.json`:
 
 Puntos clave:
 
+- **`args` es una ruta absoluta que cada quien tiene que adaptar a su propia máquina** — `mcp_config.json` no es parte de este repositorio, vive en la instalación local de Antigravity de cada usuario. Si vos (u otra persona) clonaste el proyecto en, por ejemplo, `C:\Users\vos\proyectos\github-mcp-agent`, el `args` tiene que apuntar ahí, no a la ruta de otra persona. Esto es igual en cualquier MCP server (Claude Desktop, Cursor, etc.): el host necesita la ruta real del ejecutable en ese disco.
 - **Usar la build compilada** (`node dist/server.js`), no `npx tsx src/server.ts` — eso queda solo para desarrollo activo.
-- **El token nunca va en texto plano** en este archivo: `"${GITHUB_TOKEN}"` interpola la variable desde el entorno del sistema. Este comportamiento fue **verificado empíricamente** durante el desarrollo del proyecto (no solo asumido de la documentación): se confirmó con un log de diagnóstico temporal que el token efectivamente llega al proceso antes de que el servidor cargue su `.env` local.
-- Reiniciar Antigravity **por completo** (cerrar y volver a abrir) después de definir la variable de entorno y de guardar la configuración, para que ambos cambios se reflejen.
-- Si por algún motivo la interpolación no estuviera disponible en tu versión de Antigravity, el servidor tiene un respaldo: carga su propio `.env` local automáticamente (con `process.loadEnvFile()`, resuelto por ruta absoluta), así que también funciona sin este bloque `env`.
+- **No hace falta ningún bloque `env` en esta configuración.** El servidor carga su propio `GITHUB_TOKEN` directamente desde el `.env` del proyecto (`process.loadEnvFile()`, resuelto por la ubicación del propio archivo compilado, no por el directorio desde el que Antigravity lance el proceso) — alcanza con tener `.env` completo en la carpeta del proyecto, como se explicó arriba.
+- **Se probó explícitamente pasar el token vía interpolación `${GITHUB_TOKEN}` en un bloque `env`, apoyándose en una variable de entorno del sistema operativo, y no funcionó de forma confiable**: en pruebas reales, Antigravity no heredaba los cambios de esa variable hacia el proceso del servidor, ni cerrando/reabriendo la app ni con un reinicio completo de Windows. Por eso la configuración final evita depender del entorno del sistema por completo y usa únicamente el `.env` del proyecto, que sí se probó robusto sin importar cómo se lance el proceso.
+- Reiniciar Antigravity por completo (cerrar y volver a abrir) después de guardar `mcp_config.json` o de modificar el `.env`, para que el servidor arranque de cero y tome los cambios.
 
 ---
 
@@ -301,8 +293,9 @@ npm run test
 
 | Error / síntoma | Causa probable | Qué hacer |
 |---|---|---|
-| El servidor no arranca, log `GITHUB_TOKEN no esta configurado` | Falta `.env` o la variable no está definida | Verificar que `.env` existe y tiene `GITHUB_TOKEN=...`, o que la variable está en el entorno del sistema |
+| El servidor no arranca, log `GITHUB_TOKEN no esta configurado` | Falta `.env` en la carpeta del proyecto, o la línea `GITHUB_TOKEN=` está vacía | Verificar que `.env` existe junto a `package.json` y tiene `GITHUB_TOKEN=...` con un valor real |
 | `El token de GitHub es invalido o expiro` (401) | Token vencido, revocado, o mal copiado | Generar un nuevo Personal Access Token y actualizar `.env` |
+| Rotaste el token, actualizaste `.env`, pero Antigravity sigue devolviendo 401 con el token viejo (incluso después de cerrar y reabrir la app, o de reiniciar Windows) | Antigravity no relanzó realmente el proceso del servidor, o quedó una variable de entorno del sistema llamada `GITHUB_TOKEN` de una configuración anterior pisando el valor del `.env` (`.env` nunca sobreescribe una variable ya definida en el entorno) | Verificar que no exista una variable de entorno de sistema `GITHUB_TOKEN` residual (`[Environment]::GetEnvironmentVariable("GITHUB_TOKEN","User")` en PowerShell) y borrarla si aparece; confirmar el `.env` corriendo `node dist/server.js` directo en una terminal nueva (sin Antigravity) antes de volver a probar desde ahí |
 | `El token no tiene permisos suficientes` (403, no rate limit) | Al token le falta el scope `repo` | Regenerar el token con el scope `repo` activado |
 | `Se alcanzo el limite de solicitudes de la API de GitHub` (403, rate limit) | Se agotó el límite de requests de la API | Esperar al momento indicado por GitHub (`x-ratelimit-reset`); el servidor reintenta automáticamente hasta 3 veces |
 | `El recurso solicitado no fue encontrado en GitHub` (404) | `owner`/`repo` mal escrito, o el repo no existe/no es accesible con este token | Verificar el nombre exacto del owner y del repositorio |
