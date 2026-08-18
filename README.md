@@ -4,10 +4,15 @@ MCP Server en Node.js + TypeScript que expone un catálogo de *tools* para autom
 
 El servidor no tiene interfaz gráfica propia ni base de datos: el "frontend" es el LLM que interpreta pedidos en lenguaje natural y decide qué tool invocar, y el "storage" es GitHub mismo.
 
+## Uso de IA en el desarrollo
+
+Documentación completa y auditable del uso de IA durante este proyecto (bitácora, decisiones, preparación de la defensa): [carpeta de Google Drive](https://drive.google.com/drive/folders/1hySGV83Z9Fpu3wPlvTVSdCaUnRcKvEVt?usp=sharing).
+
 ---
 
 ## Índice
 
+- [Uso de IA en el desarrollo](#uso-de-ia-en-el-desarrollo)
 - [¿Qué hace y por qué es útil?](#qué-hace-y-por-qué-es-útil)
 - [Arquitectura](#arquitectura)
 - [Requisitos](#requisitos)
