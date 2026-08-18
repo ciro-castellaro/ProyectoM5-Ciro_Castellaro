@@ -28,7 +28,10 @@ const branchSchema = z
   .string()
   .min(1, "La rama es obligatoria")
   .max(255, "La rama no puede superar los 255 caracteres")
-  .regex(/^[A-Za-z0-9][A-Za-z0-9._/-]*$/, "La rama contiene caracteres no permitidos")
+  .regex(
+    /^[A-Za-z0-9][A-Za-z0-9._/-]*$/,
+    "La rama contiene caracteres no permitidos",
+  )
   .refine((value) => !value.includes(".."), "La rama no puede contener '..'");
 
 const filePathSchema = z
@@ -40,14 +43,21 @@ const filePathSchema = z
       !value.startsWith("/") &&
       !value.includes("\\") &&
       !value.includes("\0") &&
-      value.split("/").every((segment) => segment !== "" && segment !== "." && segment !== ".."),
+      value
+        .split("/")
+        .every(
+          (segment) => segment !== "" && segment !== "." && segment !== "..",
+        ),
     "La ruta debe ser relativa, sin segmentos vacios, '.' ni '..'",
   );
 
 export const createRepositorySchema = z.object({
   name: repoNameSchema
     .min(3, "El nombre del repositorio debe tener al menos 3 caracteres")
-    .refine((value) => value !== "." && value !== "..", "El nombre del repositorio no es valido"),
+    .refine(
+      (value) => value !== "." && value !== "..",
+      "El nombre del repositorio no es valido",
+    ),
   description: z
     .string()
     .max(350, "La descripcion no puede superar los 350 caracteres")
@@ -66,12 +76,25 @@ export const createIssueSchema = z.object({
     .max(256, "El titulo no puede superar los 256 caracteres"),
   body: z
     .string()
-    .max(MAX_ISSUE_BODY_LENGTH, "El cuerpo del issue no puede superar los 65536 caracteres")
+    .max(
+      MAX_ISSUE_BODY_LENGTH,
+      "El cuerpo del issue no puede superar los 65536 caracteres",
+    )
     .optional(),
   labels: z
-    .array(z.string().min(1, "Cada label debe tener al menos 1 caracter").max(50, "Cada label puede tener hasta 50 caracteres"))
+    .array(
+      z
+        .string()
+        .min(1, "Cada label debe tener al menos 1 caracter")
+        .max(50, "Cada label puede tener hasta 50 caracteres"),
+    )
     .max(100, "No se pueden enviar mas de 100 labels")
+    .refine(
+      (values) => new Set(values).size === values.length,
+      "No se pueden enviar labels duplicadas",
+    )
     .optional(),
+
   assignees: z
     .array(ownerSchema)
     .max(10, "GitHub permite hasta 10 assignees por issue")
@@ -118,11 +141,17 @@ export const createCommitSchema = z.object({
   content: z
     .string()
     .min(1, "El contenido del archivo es obligatorio")
-    .max(MAX_CONTENT_LENGTH, "El contenido no puede superar 1000000 caracteres"),
+    .max(
+      MAX_CONTENT_LENGTH,
+      "El contenido no puede superar 1000000 caracteres",
+    ),
   message: z
     .string()
     .min(1, "El mensaje del commit es obligatorio")
-    .max(MAX_COMMIT_MESSAGE_LENGTH, "El mensaje del commit no puede superar los 10000 caracteres"),
+    .max(
+      MAX_COMMIT_MESSAGE_LENGTH,
+      "El mensaje del commit no puede superar los 10000 caracteres",
+    ),
 });
 
 export type CreateCommitInput = z.infer<typeof createCommitSchema>;
@@ -136,7 +165,12 @@ export const listIssuesSchema = z.object({
     })
     .default("open"),
   labels: z
-    .array(z.string().min(1, "Cada label debe tener al menos 1 caracter").max(50, "Cada label puede tener hasta 50 caracteres"))
+    .array(
+      z
+        .string()
+        .min(1, "Cada label debe tener al menos 1 caracter")
+        .max(50, "Cada label puede tener hasta 50 caracteres"),
+    )
     .max(100, "No se pueden enviar mas de 100 labels")
     .optional(),
   page: z

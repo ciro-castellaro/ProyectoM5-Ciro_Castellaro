@@ -20,7 +20,9 @@ describe("createRepositorySchema", () => {
     const result = createRepositorySchema.safeParse({ name: "ab" });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toContain("al menos 3 caracteres");
+      expect(result.error.issues[0]?.message).toContain(
+        "al menos 3 caracteres",
+      );
     }
   });
 
@@ -39,8 +41,21 @@ describe("createIssueSchema", () => {
       owner: "ciro-castellaro",
       repo: "mcp-agent-test",
       title: "Bug en el login",
+      labels: ["bug", "login"],
     });
     expect(result.success).toBe(true);
+  });
+
+  describe("rejects duplicate labels", () => {
+    it("rejects a payload with duplicate labels", () => {
+      const result = createIssueSchema.safeParse({
+        owner: "ciro-castellaro",
+        repo: "mcp-agent-test",
+        title: "Bug en el login",
+        labels: ["bug", "login", "login"],
+      });
+      expect(result.success).toBe(false);
+    });
   });
 
   it("rejects a payload without title", () => {
@@ -108,10 +123,18 @@ describe("createCommitSchema", () => {
       content: "data",
       message: "msg",
     };
-    expect(createCommitSchema.safeParse({ ...base, path: "../secrets.txt" }).success).toBe(false);
-    expect(createCommitSchema.safeParse({ ...base, path: "docs/../../x" }).success).toBe(false);
-    expect(createCommitSchema.safeParse({ ...base, path: "/etc/passwd" }).success).toBe(false);
-    expect(createCommitSchema.safeParse({ ...base, path: "docs/guia.md" }).success).toBe(true);
+    expect(
+      createCommitSchema.safeParse({ ...base, path: "../secrets.txt" }).success,
+    ).toBe(false);
+    expect(
+      createCommitSchema.safeParse({ ...base, path: "docs/../../x" }).success,
+    ).toBe(false);
+    expect(
+      createCommitSchema.safeParse({ ...base, path: "/etc/passwd" }).success,
+    ).toBe(false);
+    expect(
+      createCommitSchema.safeParse({ ...base, path: "docs/guia.md" }).success,
+    ).toBe(true);
   });
 
   it("rejects file content larger than the allowed maximum", () => {
@@ -142,10 +165,18 @@ describe("createCommitSchema", () => {
 describe("input hardening across schemas", () => {
   it("rejects an owner with invalid format", () => {
     expect(
-      createIssueSchema.safeParse({ owner: "-empieza-con-guion", repo: "demo", title: "t" }).success,
+      createIssueSchema.safeParse({
+        owner: "-empieza-con-guion",
+        repo: "demo",
+        title: "t",
+      }).success,
     ).toBe(false);
     expect(
-      createIssueSchema.safeParse({ owner: "a".repeat(40), repo: "demo", title: "t" }).success,
+      createIssueSchema.safeParse({
+        owner: "a".repeat(40),
+        repo: "demo",
+        title: "t",
+      }).success,
     ).toBe(false);
   });
 
@@ -168,7 +199,10 @@ describe("input hardening across schemas", () => {
 
 describe("listIssuesSchema", () => {
   it("applies the open state by default", () => {
-    const result = listIssuesSchema.safeParse({ owner: "ciro-castellaro", repo: "mcp-agent-test" });
+    const result = listIssuesSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+    });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.state).toBe("open");
