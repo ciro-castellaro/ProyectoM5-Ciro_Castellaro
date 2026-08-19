@@ -177,10 +177,11 @@ Abre un issue en un repositorio existente.
 | `repo` | string | Sí | nombre del repositorio |
 | `title` | string | Sí | hasta 256 caracteres |
 | `body` | string | No | descripción del issue |
-| `labels` | string[] | No | |
-| `assignees` | string[] | No | |
+| `labels` | string[] | No | sin duplicados, hasta 100 |
+| `assignees` | string[] | No | hasta 10 |
+| `milestone` | number | No | número entero positivo del milestone existente en el repo |
 
-**Ejemplo de prompt:** *"Abrí un issue en ciro-castellaro/demo-api con el título 'Agregar autenticación' explicando que falta el login con OAuth."*
+**Ejemplo de prompt:** *"Abrí un issue en ciro-castellaro/demo-api con el título 'Agregar autenticación' explicando que falta el login con OAuth, y asignalo al milestone 3."*
 
 ### `list_repositories`
 
