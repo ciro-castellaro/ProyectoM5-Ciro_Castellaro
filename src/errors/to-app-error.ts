@@ -36,8 +36,18 @@ export function toAppError(error: unknown): AppError {
   if (isOctokitError(error)) {
     const status = error.status;
     const upstreamMessage = sanitizeUpstreamMessage(
-      error.response?.data?.message ?? error.message ?? "Error desconocido de GitHub",
+      error.response?.data?.message ??
+        error.message ??
+        "Error desconocido de GitHub",
     );
+
+    if (status === 400) {
+      return new GitHubAPIError({
+        message: `Solicitud invalida a la API de GitHub: ${upstreamMessage}`,
+        status,
+        retryable: false,
+      });
+    }
 
     if (status === 401) {
       return new AuthenticationError(
@@ -50,12 +60,15 @@ export function toAppError(error: unknown): AppError {
       const remaining = error.response?.headers?.["x-ratelimit-remaining"];
       if (String(remaining) === "0") {
         return new GitHubAPIError({
-          message: "Se alcanzo el limite de solicitudes de la API de GitHub. Intenta de nuevo en unos minutos.",
+          message:
+            "Se alcanzo el limite de solicitudes de la API de GitHub. Intenta de nuevo en unos minutos.",
           status,
           retryable: true,
           hint: "Revisa el header x-ratelimit-reset para saber cuando se libera el limite",
           action: "Esperar antes de reintentar",
-          details: { rateLimitReset: error.response?.headers?.["x-ratelimit-reset"] },
+          details: {
+            rateLimitReset: error.response?.headers?.["x-ratelimit-reset"],
+          },
         });
       }
       return new GitHubAPIError({
@@ -69,7 +82,8 @@ export function toAppError(error: unknown): AppError {
 
     if (status === 404) {
       return new GitHubAPIError({
-        message: "El recurso solicitado no fue encontrado en GitHub. Verifica el owner y el nombre del repositorio.",
+        message:
+          "El recurso solicitado no fue encontrado en GitHub. Verifica el owner y el nombre del repositorio.",
         status,
         retryable: false,
         action: "Verificar owner/repo e intentar de nuevo",
@@ -87,7 +101,8 @@ export function toAppError(error: unknown): AppError {
 
     if (typeof status === "number" && status >= 500) {
       return new GitHubAPIError({
-        message: "GitHub esta teniendo problemas temporales. Intenta de nuevo en unos momentos.",
+        message:
+          "GitHub esta teniendo problemas temporales. Intenta de nuevo en unos momentos.",
         status,
         retryable: true,
       });
@@ -95,7 +110,8 @@ export function toAppError(error: unknown): AppError {
 
     if (status === 429) {
       return new GitHubAPIError({
-        message: "Se alcanzo el limite de solicitudes de la API de GitHub. Intenta de nuevo en unos minutos.",
+        message:
+          "Se alcanzo el limite de solicitudes de la API de GitHub. Intenta de nuevo en unos minutos.",
         status,
         retryable: true,
         hint: "Revisa el header retry-after para saber cuanto esperar",
@@ -112,8 +128,14 @@ export function toAppError(error: unknown): AppError {
   }
 
   if (error instanceof Error) {
-    return new NetworkError("No se pudo completar la operacion por un problema de red o interno.");
+    return new NetworkError(
+      "No se pudo completar la operacion por un problema de red o interno.",
+    );
   }
 
-  return new AppError({ code: "INTERNAL_ERROR", message: "Ocurrio un error inesperado.", retryable: false });
+  return new AppError({
+    code: "INTERNAL_ERROR",
+    message: "Ocurrio un error inesperado.",
+    retryable: false,
+  });
 }

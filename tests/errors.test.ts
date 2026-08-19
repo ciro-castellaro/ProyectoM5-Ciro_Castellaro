@@ -14,6 +14,12 @@ describe("toAppError", () => {
     expect(toAppError(original)).toBe(original);
   });
 
+  it("classifies a 400 as a non-retryable GitHubAPIError", () => {
+    const result = toAppError({ status: 400, message: "Bad request" });
+    expect(result).toBeInstanceOf(GitHubAPIError);
+    expect(result.retryable).toBe(false);
+  });
+
   it("classifies a 401 as a non-retryable AuthenticationError", () => {
     const result = toAppError({ status: 401, message: "Bad credentials" });
     expect(result).toBeInstanceOf(AuthenticationError);
@@ -23,14 +29,22 @@ describe("toAppError", () => {
   it("classifies a 403 with rate limit exhausted as retryable", () => {
     const result = toAppError({
       status: 403,
-      response: { headers: { "x-ratelimit-remaining": "0", "x-ratelimit-reset": "9999999999" } },
+      response: {
+        headers: {
+          "x-ratelimit-remaining": "0",
+          "x-ratelimit-reset": "9999999999",
+        },
+      },
     });
     expect(result).toBeInstanceOf(GitHubAPIError);
     expect(result.retryable).toBe(true);
   });
 
   it("classifies a 403 without rate limit info as insufficient permissions, not retryable", () => {
-    const result = toAppError({ status: 403, response: { headers: { "x-ratelimit-remaining": "10" } } });
+    const result = toAppError({
+      status: 403,
+      response: { headers: { "x-ratelimit-remaining": "10" } },
+    });
     expect(result).toBeInstanceOf(GitHubAPIError);
     expect(result.retryable).toBe(false);
     expect(result.message).toContain("permisos");
@@ -52,8 +66,12 @@ describe("toAppError", () => {
 
   it("sanitizes control characters and truncates oversized upstream messages", () => {
     const ansiEscape = String.fromCharCode(27);
-    const malicious = "linea1\nlinea2" + ansiEscape + "[31mrojo" + "x".repeat(500);
-    const result = toAppError({ status: 422, response: { data: { message: malicious } } });
+    const malicious =
+      "linea1\nlinea2" + ansiEscape + "[31mrojo" + "x".repeat(500);
+    const result = toAppError({
+      status: 422,
+      response: { data: { message: malicious } },
+    });
     expect(result.message).not.toContain("\n");
     expect(result.message).not.toContain(ansiEscape);
     expect(result.message.length).toBeLessThan(400);
@@ -66,7 +84,10 @@ describe("toAppError", () => {
   });
 
   it("classifies a 429 (secondary rate limit) as retryable", () => {
-    const result = toAppError({ status: 429, response: { headers: { "retry-after": "30" } } });
+    const result = toAppError({
+      status: 429,
+      response: { headers: { "retry-after": "30" } },
+    });
     expect(result.retryable).toBe(true);
     expect(result.message).toContain("limite de solicitudes");
   });
@@ -86,7 +107,10 @@ describe("toAppError", () => {
 
 describe("formatToolError", () => {
   it("never exposes a stack trace, only the stable payload shape", () => {
-    const formatted = formatToolError({ status: 401, message: "Bad credentials" });
+    const formatted = formatToolError({
+      status: 401,
+      message: "Bad credentials",
+    });
     expect(Object.keys(formatted).sort()).toEqual(
       ["action", "code", "details", "hint", "message", "retryable"].sort(),
     );
