@@ -222,10 +222,12 @@ Lista los issues (nunca pull requests, se excluyen automáticamente) de un repos
 | `repo` | string | Sí | |
 | `state` | enum | No | `open` \| `closed` \| `all`, default `open` |
 | `labels` | string[] | No | |
+| `sort` | enum | No | `created` \| `updated` \| `comments`, default `created` |
+| `direction` | enum | No | `asc` \| `desc`, default `desc` |
 | `page` | number | No | default `1` |
 | `perPage` | number | No | default `30`, máx. `100` |
 
-**Ejemplo de prompt:** *"Mostrame los issues abiertos del repositorio ciro-castellaro/demo-api."*
+**Ejemplo de prompt:** *"Mostrame los issues abiertos del repositorio ciro-castellaro/demo-api, ordenados por fecha de creación."*
 
 ### `ping`
 
