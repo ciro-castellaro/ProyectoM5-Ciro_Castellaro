@@ -11,6 +11,10 @@ export const createRepositorySchema = z.object({
   description: z
     .string()
     .max(350, "La descripcion no puede superar los 350 caracteres")
+    .refine(
+      (value) => value.trim().length > 0,
+      "La descripcion no puede estar vacia",
+    )
     .optional(),
   private: z.boolean().default(false),
 });

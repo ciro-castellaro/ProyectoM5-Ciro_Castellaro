@@ -16,6 +16,14 @@ describe("createRepositorySchema", () => {
     }
   });
 
+  it("rejects a payload with an empty description", () => {
+    const result = createRepositorySchema.safeParse({
+      name: "demo-api",
+      description: "   ",
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects a name shorter than 3 characters", () => {
     const result = createRepositorySchema.safeParse({ name: "ab" });
     expect(result.success).toBe(false);
