@@ -2,7 +2,14 @@ import type { Octokit } from "@octokit/rest";
 import { withExponentialBackoff } from "../utils/retry.js";
 import { logger } from "../utils/logging.js";
 import { toAppError } from "../errors/index.js";
-import { toRepoDTO, toIssueDTO, toCommitDTO, type RepoDTO, type IssueDTO, type CommitDTO } from "./dto.js";
+import {
+  toRepoDTO,
+  toIssueDTO,
+  toCommitDTO,
+  type RepoDTO,
+  type IssueDTO,
+  type CommitDTO,
+} from "./dto.js";
 import type {
   CreateRepositoryInput,
   CreateIssueInput,
@@ -11,7 +18,9 @@ import type {
   ListIssuesInput,
 } from "../schemas/index.js";
 
-function logRateLimit(headers: Record<string, string | number | undefined> | undefined): void {
+function logRateLimit(
+  headers: Record<string, string | number | undefined> | undefined,
+): void {
   if (!headers) return;
   logger.debug("Estado de rate limit de GitHub", {
     remaining: headers["x-ratelimit-remaining"],
@@ -83,6 +92,7 @@ export class GitHubClient {
         const response = await this.octokit.issues.create({
           owner: params.owner,
           repo: params.repo,
+          milestone: params.milestone,
           title: params.title,
           body: params.body,
           labels: params.labels,
@@ -109,7 +119,9 @@ export class GitHubClient {
           per_page: params.perPage,
         });
         logRateLimit(response.headers);
-        return response.data.filter((issue) => !issue.pull_request).map(toIssueDTO);
+        return response.data
+          .filter((issue) => !issue.pull_request)
+          .map(toIssueDTO);
       } catch (error) {
         throw toAppError(error);
       }
@@ -127,10 +139,18 @@ export class GitHubClient {
       try {
         const { owner, repo, branch, path, content, message } = params;
 
-        const refResponse = await this.octokit.git.getRef({ owner, repo, ref: `heads/${branch}` });
+        const refResponse = await this.octokit.git.getRef({
+          owner,
+          repo,
+          ref: `heads/${branch}`,
+        });
         const baseCommitSha = refResponse.data.object.sha;
 
-        const baseCommitResponse = await this.octokit.git.getCommit({ owner, repo, commit_sha: baseCommitSha });
+        const baseCommitResponse = await this.octokit.git.getCommit({
+          owner,
+          repo,
+          commit_sha: baseCommitSha,
+        });
         const baseTreeSha = baseCommitResponse.data.tree.sha;
 
         const blobResponse = await this.octokit.git.createBlob({
@@ -144,7 +164,9 @@ export class GitHubClient {
           owner,
           repo,
           base_tree: baseTreeSha,
-          tree: [{ path, mode: "100644", type: "blob", sha: blobResponse.data.sha }],
+          tree: [
+            { path, mode: "100644", type: "blob", sha: blobResponse.data.sha },
+          ],
         });
 
         const commitResponse = await this.octokit.git.createCommit({

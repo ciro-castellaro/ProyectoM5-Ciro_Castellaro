@@ -1,9 +1,20 @@
 import { z } from "zod";
-import { ownerSchema, repoNameSchema, labelSchema, MAX_ISSUE_BODY_LENGTH } from "./shared.js";
+import {
+  ownerSchema,
+  repoNameSchema,
+  labelSchema,
+  MAX_ISSUE_BODY_LENGTH,
+} from "./shared.js";
 
 export const createIssueSchema = z.object({
   owner: ownerSchema,
   repo: repoNameSchema,
+  milestone: z
+    .number()
+    .int("El milestone debe ser un numero entero")
+    .positive("El milestone debe ser mayor a 0")
+    .optional(),
+
   title: z
     .string()
     .min(1, "El titulo del issue es obligatorio")

@@ -40,10 +40,42 @@ describe("createIssueSchema", () => {
     const result = createIssueSchema.safeParse({
       owner: "ciro-castellaro",
       repo: "mcp-agent-test",
+      milestone: 1,
+      assignees: ["ciro-castellaro"],
       title: "Bug en el login",
       labels: ["bug", "login"],
     });
     expect(result.success).toBe(true);
+  });
+
+  it("rejects a payload with a milestone of 0", () => {
+    const result = createIssueSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      milestone: 0,
+      title: "Bug en el login",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a payload with a negative milestone", () => {
+    const result = createIssueSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      milestone: -1,
+      title: "Bug en el login",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a payload with a non-integer milestone", () => {
+    const result = createIssueSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      milestone: 1.5,
+      title: "Bug en el login",
+    });
+    expect(result.success).toBe(false);
   });
 
   describe("rejects duplicate labels", () => {
