@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { ownerSchema, repoNameSchema, labelSchema, MAX_PAGE } from "./shared.js";
+import {
+  ownerSchema,
+  repoNameSchema,
+  labelSchema,
+  MAX_PAGE,
+} from "./shared.js";
 
 export const listIssuesSchema = z.object({
   owner: ownerSchema,
@@ -25,6 +30,14 @@ export const listIssuesSchema = z.object({
     .min(1, "per_page debe ser al menos 1")
     .max(100, "per_page no puede superar 100")
     .default(30),
+  sort: z
+    .enum(["created", "updated", "comments"], {
+      message: "sort debe ser uno de: created, updated, comments",
+    })
+    .default("created"),
+  direction: z
+    .enum(["asc", "desc"], { message: "direction debe ser asc o desc" })
+    .default("desc"),
 });
 
 export type ListIssuesInput = z.infer<typeof listIssuesSchema>;

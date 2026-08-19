@@ -117,6 +117,8 @@ export class GitHubClient {
           labels: params.labels?.join(","),
           page: params.page,
           per_page: params.perPage,
+          sort: params.sort,
+          direction: params.direction,
         });
         logRateLimit(response.headers);
         return response.data

@@ -249,6 +249,24 @@ describe("listIssuesSchema", () => {
     }
   });
 
+  it("rejects a sort value that is not one of the allowed options", () => {
+    const result = listIssuesSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      sort: "invalid-sort",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a direction value that is not one of the allowed options", () => {
+    const result = listIssuesSchema.safeParse({
+      owner: "ciro-castellaro",
+      repo: "mcp-agent-test",
+      direction: "invalid-direction",
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects an invalid state value", () => {
     const result = listIssuesSchema.safeParse({
       owner: "ciro-castellaro",
