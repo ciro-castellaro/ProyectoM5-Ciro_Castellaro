@@ -52,7 +52,11 @@ describe("GitHubClient.createRepository", () => {
     });
     const github = new GitHubClient(octokit as unknown as Octokit);
 
-    const repo = await github.createRepository({ name: "demo-api", description: "demo", private: false });
+    const repo = await github.createRepository({
+      name: "demo-api",
+      description: "demo",
+      private: false,
+    });
 
     expect(repo.fullName).toBe("ciro-castellaro/demo-api");
     expect(octokit.repos.createForAuthenticatedUser).toHaveBeenCalledWith(
@@ -96,15 +100,29 @@ describe("GitHubClient.createIssue", () => {
     const octokit = createMockOctokit();
     octokit.repos.get.mockResolvedValue({
       headers: {},
-      data: { name: "demo-api", full_name: "ciro-castellaro/demo-api", html_url: "https://github.com/x", private: false },
+      data: {
+        name: "demo-api",
+        full_name: "ciro-castellaro/demo-api",
+        html_url: "https://github.com/x",
+        private: false,
+      },
     });
     octokit.issues.create.mockResolvedValue({
       headers: {},
-      data: { number: 1, title: "Bug", html_url: "https://github.com/x/issues/1", state: "open" },
+      data: {
+        number: 1,
+        title: "Bug",
+        html_url: "https://github.com/x/issues/1",
+        state: "open",
+      },
     });
     const github = new GitHubClient(octokit as unknown as Octokit);
 
-    const issue = await github.createIssue({ owner: "ciro-castellaro", repo: "demo-api", title: "Bug" });
+    const issue = await github.createIssue({
+      owner: "ciro-castellaro",
+      repo: "demo-api",
+      title: "Bug",
+    });
 
     expect(issue.number).toBe(1);
     expect(octokit.issues.create).toHaveBeenCalled();
@@ -116,7 +134,11 @@ describe("GitHubClient.createIssue", () => {
     const github = new GitHubClient(octokit as unknown as Octokit);
 
     await expect(
-      github.createIssue({ owner: "ciro-castellaro", repo: "no-existe", title: "Bug" }),
+      github.createIssue({
+        owner: "ciro-castellaro",
+        repo: "no-existe",
+        title: "Bug",
+      }),
     ).rejects.toBeInstanceOf(GitHubAPIError);
     expect(octokit.issues.create).not.toHaveBeenCalled();
   });
@@ -127,13 +149,29 @@ describe("GitHubClient.listIssues", () => {
     const octokit = createMockOctokit();
     octokit.repos.get.mockResolvedValue({
       headers: {},
-      data: { name: "demo-api", full_name: "ciro-castellaro/demo-api", html_url: "https://github.com/x", private: false },
+      data: {
+        name: "demo-api",
+        full_name: "ciro-castellaro/demo-api",
+        html_url: "https://github.com/x",
+        private: false,
+      },
     });
     octokit.issues.listForRepo.mockResolvedValue({
       headers: {},
       data: [
-        { number: 1, title: "Issue real", html_url: "https://github.com/x/1", state: "open" },
-        { number: 2, title: "Es un PR", html_url: "https://github.com/x/2", state: "open", pull_request: {} },
+        {
+          number: 1,
+          title: "Issue real",
+          html_url: "https://github.com/x/1",
+          state: "open",
+        },
+        {
+          number: 2,
+          title: "Es un PR",
+          html_url: "https://github.com/x/2",
+          state: "open",
+          pull_request: {},
+        },
       ],
     });
     const github = new GitHubClient(octokit as unknown as Octokit);
@@ -144,6 +182,8 @@ describe("GitHubClient.listIssues", () => {
       state: "open",
       page: 1,
       perPage: 30,
+      sort: "created",
+      direction: "desc",
     });
 
     expect(issues).toHaveLength(1);
@@ -156,14 +196,27 @@ describe("GitHubClient.createCommit", () => {
     const octokit = createMockOctokit();
     octokit.repos.get.mockResolvedValue({
       headers: {},
-      data: { name: "demo-api", full_name: "ciro-castellaro/demo-api", html_url: "https://github.com/x", private: false },
+      data: {
+        name: "demo-api",
+        full_name: "ciro-castellaro/demo-api",
+        html_url: "https://github.com/x",
+        private: false,
+      },
     });
-    octokit.git.getRef.mockResolvedValue({ data: { object: { sha: "base-sha" } } });
-    octokit.git.getCommit.mockResolvedValue({ data: { tree: { sha: "base-tree-sha" } } });
+    octokit.git.getRef.mockResolvedValue({
+      data: { object: { sha: "base-sha" } },
+    });
+    octokit.git.getCommit.mockResolvedValue({
+      data: { tree: { sha: "base-tree-sha" } },
+    });
     octokit.git.createBlob.mockResolvedValue({ data: { sha: "blob-sha" } });
     octokit.git.createTree.mockResolvedValue({ data: { sha: "new-tree-sha" } });
     octokit.git.createCommit.mockResolvedValue({
-      data: { sha: "new-commit-sha", html_url: "https://github.com/x/commit/new-commit-sha", message: "Add file" },
+      data: {
+        sha: "new-commit-sha",
+        html_url: "https://github.com/x/commit/new-commit-sha",
+        message: "Add file",
+      },
     });
     octokit.git.updateRef.mockResolvedValue({ data: {} });
     const github = new GitHubClient(octokit as unknown as Octokit);
@@ -179,7 +232,10 @@ describe("GitHubClient.createCommit", () => {
 
     expect(commit.sha).toBe("new-commit-sha");
     expect(octokit.git.createBlob).toHaveBeenCalledWith(
-      expect.objectContaining({ content: Buffer.from("hello", "utf-8").toString("base64"), encoding: "base64" }),
+      expect.objectContaining({
+        content: Buffer.from("hello", "utf-8").toString("base64"),
+        encoding: "base64",
+      }),
     );
     expect(octokit.git.updateRef).toHaveBeenCalledWith(
       expect.objectContaining({ ref: "heads/main", sha: "new-commit-sha" }),
@@ -190,10 +246,15 @@ describe("GitHubClient.createCommit", () => {
 describe("GitHubClient error handling", () => {
   it("propagates a 401 as a non-retryable AuthenticationError without retrying", async () => {
     const octokit = createMockOctokit();
-    octokit.repos.get.mockRejectedValue({ status: 401, message: "Bad credentials" });
+    octokit.repos.get.mockRejectedValue({
+      status: 401,
+      message: "Bad credentials",
+    });
     const github = new GitHubClient(octokit as unknown as Octokit);
 
-    await expect(github.getRepository("ciro-castellaro", "demo-api")).rejects.toBeInstanceOf(AuthenticationError);
+    await expect(
+      github.getRepository("ciro-castellaro", "demo-api"),
+    ).rejects.toBeInstanceOf(AuthenticationError);
     expect(octokit.repos.get).toHaveBeenCalledTimes(1);
   });
 
@@ -204,7 +265,12 @@ describe("GitHubClient error handling", () => {
       .mockRejectedValueOnce({ status: 500, message: "Internal Server Error" })
       .mockResolvedValueOnce({
         headers: {},
-        data: { name: "demo-api", full_name: "ciro-castellaro/demo-api", html_url: "https://github.com/x", private: false },
+        data: {
+          name: "demo-api",
+          full_name: "ciro-castellaro/demo-api",
+          html_url: "https://github.com/x",
+          private: false,
+        },
       });
     const github = new GitHubClient(octokit as unknown as Octokit);
 
@@ -227,7 +293,12 @@ describe("GitHubClient error handling", () => {
       })
       .mockResolvedValueOnce({
         headers: {},
-        data: { name: "demo-api", full_name: "ciro-castellaro/demo-api", html_url: "https://github.com/x", private: false },
+        data: {
+          name: "demo-api",
+          full_name: "ciro-castellaro/demo-api",
+          html_url: "https://github.com/x",
+          private: false,
+        },
       });
     const github = new GitHubClient(octokit as unknown as Octokit);
 
